@@ -500,7 +500,7 @@ class KeyboardActionsState extends State<KeyboardActions>
     final inserted = _overlay == null;
     if (inserted) {
       _overlay = OverlayEntry(builder: _buildOverlay);
-      Overlay.of(context).insert(_overlay!);
+      Overlay.of(context, rootOverlay: true).insert(_overlay!);
     } else {
       _overlay!.markNeedsBuild();
     }
@@ -990,7 +990,7 @@ class KeyboardActionsState extends State<KeyboardActions>
         if (_footer != null)
           Padding(
             padding: EdgeInsets.only(bottom: safeBottom),
-            child: _footer!,
+            child: _footer,
           ),
       ],
     );

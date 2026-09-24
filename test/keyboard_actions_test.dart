@@ -277,7 +277,6 @@ void main() {
     await pumpKeyboardApp(
       tester,
       child: KeyboardActions(
-        dismissOnTapOutside: true,
         child: Column(
           children: [
             TextField(focusNode: a),
@@ -360,7 +359,6 @@ void main() {
     await pumpKeyboardApp(
       tester,
       child: KeyboardActions.done(
-        dismissOnTapOutside: true,
         child: Column(
           children: [
             TextField(
@@ -497,7 +495,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Done'), findsOneWidget);
 
-    navigator.currentState!.push(
+    await navigator.currentState!.push(
       MaterialPageRoute<void>(builder: (_) => const Scaffold()),
     );
     await tester.pump();
