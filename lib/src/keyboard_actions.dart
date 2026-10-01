@@ -587,6 +587,11 @@ class KeyboardActionsState extends State<KeyboardActions>
   double _overlayKeyboardHeight(BuildContext overlayContext) {
     final live = _realKeyboardHeight(overlayContext);
     _noteSessionKeyboardHeight(live);
+    final node = _current;
+    // A custom panel replaces the OS keyboard. Keep it at the bottom while
+    // the old keyboard dismisses so it is revealed in place instead of first
+    // appearing above the OS keyboard and then dropping down.
+    if (node != null && _isCustomInput(node)) return 0;
     if (live > 0) return live;
     if (_showing && _sessionKeyboardHeight > 0) return _sessionKeyboardHeight;
     return 0;
@@ -664,7 +669,10 @@ class KeyboardActionsState extends State<KeyboardActions>
     // last height across a transient 0 during focus handoff.
     final liveKeyboard = MediaQuery.viewInsetsOf(context).bottom;
     _noteSessionKeyboardHeight(liveKeyboard);
-    final keyboardShowing = liveKeyboard > 0 || _sessionKeyboardHeight > 0;
+    final node = _current;
+    final customInput = node != null && _isCustomInput(node);
+    final keyboardShowing =
+        !customInput && (liveKeyboard > 0 || _sessionKeyboardHeight > 0);
     final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
 
     final needed = _barBlockHeight(
