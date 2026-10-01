@@ -375,11 +375,7 @@ class KeyboardActionsState extends State<KeyboardActions>
         _syncOverlay();
         _recomputeInset();
         _keepKeyboardAlive(focused);
-        _navUnlockTimer?.cancel();
-        _navUnlockTimer = Timer(const Duration(milliseconds: 450), () {
-          if (!mounted) return;
-          _navigating = false;
-        });
+        _scheduleFieldTransferEnd();
         if (widget.ensureVisible) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
@@ -861,14 +857,17 @@ class KeyboardActionsState extends State<KeyboardActions>
 
     // Hold the transfer flag long enough for iOS to swap keyboard types
     // without our overlay/hide logic treating it as a dismiss.
+    _scheduleFieldTransferEnd();
+  }
+
+  void _scheduleFieldTransferEnd() {
     _navUnlockTimer?.cancel();
     _navUnlockTimer = Timer(const Duration(milliseconds: 450), () {
       if (!mounted) return;
       _navigating = false;
-      final focused = _focusedManagedNode() ?? next;
-      _current = focused;
-      _footer = _fieldFor(focused)?.footerOf(context);
-      _overlay?.markNeedsBuild();
+      // Unfocus may have happened while the transfer guard ignored focus
+      // changes. Reconcile with live focus instead of retaining the old field.
+      _handleFocusChange();
     });
   }
 
@@ -891,7 +890,7 @@ class KeyboardActionsState extends State<KeyboardActions>
 
     SystemChannels.textInput.invokeMethod<void>('TextInput.show');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !editable.mounted) return;
+      if (!mounted || !editable.mounted || !node.hasFocus) return;
       editable.requestKeyboard();
       SystemChannels.textInput.invokeMethod<void>('TextInput.show');
     });
